@@ -4,8 +4,8 @@ dados_bancarios = {
 'agencia': 524,
 'conta': 77054,
 'chaves_pix': {
-    'cpf': '104.873.436-62',
-    'telefone': '38991935116',
+    'cpf': '123.123.123-12',
+    'telefone': '59928022',
     }
 }
 
@@ -17,10 +17,26 @@ destinatarios = {
 
 class Banco:
     def __init__(self):
-        self.saldo = 1500
+        self.__saldo = 1500
         self.limite_cheque_especial = 500
         self.cheque_especial_usado = 0
         self.historico = []
+
+    @property
+    def saldo(self):
+        return self.__saldo
+
+    def depositar(self, valor):
+        if self.cheque_especial_usado > 0:
+            if valor >= self.cheque_especial_usado:
+                self.__saldo += (valor - self.cheque_especial_usado)
+                self.cheque_especial_usado = 0
+            else:
+                self.cheque_especial_usado = (self.cheque_especial_usado - valor)
+        else:
+            self.__saldo += valor
+        return f"R${valor:,.2f} depositado com sucesso !"
+    
 
 def extrato(conta):
     """
@@ -275,3 +291,10 @@ def saque(conta):
             'tipo': 'Saque',
             'valor': valor_saque
         })
+
+conta1 = Banco()
+
+print(conta1.saldo)
+print(conta1.depositar(500))
+print(conta1.saldo)
+print(conta1.cheque_especial_usado)
