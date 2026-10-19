@@ -26,7 +26,16 @@ class Banco:
     def saldo(self):
         return self.__saldo
 
+    @saldo.setter
+    def saldo(self, valor):
+        if valor < 0:
+            raise ValueError("Valor inválido!")
+        else:
+            raise AttributeError("Não é possível alterar o saldo dessa maneira! ")
+
     def depositar(self, valor):
+        if valor <= 0:
+            raise ValueError("Valor inválido!")            
         if self.cheque_especial_usado > 0:
             if valor >= self.cheque_especial_usado:
                 self.__saldo += (valor - self.cheque_especial_usado)
@@ -35,6 +44,13 @@ class Banco:
                 self.cheque_especial_usado = (self.cheque_especial_usado - valor)
         else:
             self.__saldo += valor
+
+        # Registro no Histórico
+        self.historico.append({
+            'tipo': 'Depósito', 
+            'valor': valor
+        })
+
         return f"R${valor:,.2f} depositado com sucesso !"
     
 
@@ -208,7 +224,6 @@ def consultar_dados():
     print(f"Conta: {dados_bancarios['conta']}\n")
  
 def deposito(conta):
-    while True:
         print(f'\nSaldo atual: R${conta.saldo:.2f}\n')
 
         # Digitando o Valor
@@ -217,28 +232,11 @@ def deposito(conta):
         # Processamento
         print('Realizando Depósito...')
         sleep(3)
+        
+        mensagem = conta.depositar(valor_deposito)
 
-        # Atualizando Valores
-        if conta.cheque_especial_usado > 0:
-            if valor_deposito >= conta.cheque_especial_usado:
-                valor_para_saldo = valor_deposito - conta.cheque_especial_usado
-                conta.saldo += valor_para_saldo
-                conta.cheque_especial_usado = 0
-            else:
-                valor_para_quitar = valor_deposito
-                conta.saldo = 0
-                conta.cheque_especial_usado -= valor_para_quitar
-        else:
-            conta.saldo += valor_deposito
-
-        print(f'Saldo atualizado: R${conta.saldo:.2f}')
-
-        # Registro no Histórico
-        conta.historico.append({
-            'tipo': 'Depósito', 
-            'valor': valor_deposito
-        })
-        return()
+        print(mensagem)
+        
 
 def saque(conta):
     """
@@ -291,10 +289,3 @@ def saque(conta):
             'tipo': 'Saque',
             'valor': valor_saque
         })
-
-conta1 = Banco()
-
-print(conta1.saldo)
-print(conta1.depositar(500))
-print(conta1.saldo)
-print(conta1.cheque_especial_usado)
