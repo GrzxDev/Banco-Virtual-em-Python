@@ -31,7 +31,7 @@ class Banco:
         if valor < 0:
             raise ValueError("Valor inválido!")
         else:
-            raise AttributeError("Não é possível alterar o saldo dessa maneira! ")
+            raise AttributeError("Não é possível alterar o saldo dessa maneira!")
 
     def depositar(self, valor):
         if valor <= 0:
@@ -52,7 +52,41 @@ class Banco:
         })
 
         return f"R${valor:,.2f} depositado com sucesso !"
-    
+
+    def sacar(self, valor_saque) -> bool:
+        # Cálculo de Limites
+        limite_cheque_disponivel = self.limite_cheque_especial - self.cheque_especial_usado
+        limite_total = self.saldo + limite_cheque_disponivel
+
+        # Validação de Valor
+        if valor_saque <= 0:
+            return False
+
+        # Validação do Valor do Saque
+        if valor_saque > limite_total:
+            return False
+
+        if valor_saque > self.saldo:
+            # Valor Utilizado do Cheque Especial
+            uso_cheque = valor_saque - self.saldo
+
+            self.__saldo = 0
+            self.cheque_especial_usado += uso_cheque
+            # Registro no Histórico
+            self.historico.append({
+                "tipo": "Saque",
+                "valor": valor_saque,
+                "cheque": uso_cheque
+            })
+            return True
+        else:
+            self.historico.append({
+                "tipo": "Saque",
+                "valor": valor_saque
+            })
+            self.__saldo -= valor_saque
+            return True
+
 
 def extrato(conta):
     """
@@ -237,7 +271,6 @@ def deposito(conta):
 
         print(mensagem)
         
-
 def saque(conta):
     """
     Função destinada a realização de saques.
@@ -255,7 +288,7 @@ def saque(conta):
 
     if valor_saque > limite_total:
         print('Limite Total Indisponível para Saque. ')
-        return()
+        return False
 
     if valor_saque > conta.saldo:
         # Valor Utilizado do Cheque Especial
