@@ -1,6 +1,7 @@
 # Projeto #1 - Banco Virtual
 
 import banco
+from time import sleep
 
 conta1 = banco.Banco()
 
@@ -26,6 +27,8 @@ while True:
     elif escolha == 6:
         banco.saque(conta1)
     elif escolha == 7:
+        print("Saindo do Sistema, até mais.")
+        sleep(1.5)
         break
     else:
         print('Opção inválida, tente novamente! ')

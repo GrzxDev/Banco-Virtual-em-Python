@@ -53,38 +53,38 @@ class Banco:
 
         return f"R${valor:,.2f} depositado com sucesso !"
 
-    def sacar(self, valor_saque) -> bool:
+    def sacar(self, valor) -> bool:
         # Cálculo de Limites
         limite_cheque_disponivel = self.limite_cheque_especial - self.cheque_especial_usado
         limite_total = self.saldo + limite_cheque_disponivel
 
         # Validação de Valor
-        if valor_saque <= 0:
+        if valor <= 0:
             return False
 
         # Validação do Valor do Saque
-        if valor_saque > limite_total:
+        if valor > limite_total:
             return False
 
-        if valor_saque > self.saldo:
+        if valor > self.saldo:
             # Valor Utilizado do Cheque Especial
-            uso_cheque = valor_saque - self.saldo
+            uso_cheque = valor - self.saldo
 
             self.__saldo = 0
             self.cheque_especial_usado += uso_cheque
             # Registro no Histórico
             self.historico.append({
                 "tipo": "Saque",
-                "valor": valor_saque,
+                "valor": valor,
                 "cheque": uso_cheque
             })
             return True
         else:
             self.historico.append({
                 "tipo": "Saque",
-                "valor": valor_saque
+                "valor": valor
             })
-            self.__saldo -= valor_saque
+            self.__saldo -= valor
             return True
 
 
@@ -152,11 +152,12 @@ def validar_valor():
 
         if valor > 0:
             return valor
-        
         print('Valor inválido! Digite um valor maior que zero. ')
 
 def menu():
-    print('-' * 12)
+    print('-' * 30)
+    print("Banco DuGrau".center(30))
+    print('-' * 30)
     print('1 - Saldo')
     print('2 - Area Pix')
     print('3 - Consultar Dados Bancarios ')
@@ -274,8 +275,8 @@ def deposito(conta):
 def saque(conta):
     """
     Função destinada a realização de saques.
-    """                                                                                                         
-    # Limite do Cheque e Limite Total Disponível
+    """         
+    # Cálculo de Limites
     limite_cheque_disponivel = conta.limite_cheque_especial - conta.cheque_especial_usado
     limite_total = conta.saldo + limite_cheque_disponivel
 
@@ -283,42 +284,33 @@ def saque(conta):
     print(f'Limite Cheque especial: {conta.limite_cheque_especial:.2f} ')
     print(f'Limite Total Disponível para Saque: R${limite_total:.2f} ')
 
-    # Validação do Valor
-    valor_saque = validar_valor()
+    valor = validar_valor()
 
-    if valor_saque > limite_total:
-        print('Limite Total Indisponível para Saque. ')
-        return False
-
-    if valor_saque > conta.saldo:
-        # Valor Utilizado do Cheque Especial
-        uso_cheque = valor_saque - conta.saldo
-
-        print(f'Você usará R${uso_cheque:.2f} do seu Cheque Especial. ')
+    # Interação com Usuário (Uso de Cheque Especial)
+    if valor > conta.saldo:
+        uso_cheque = valor - conta.saldo
         if uso_cheque <= limite_cheque_disponivel:
             while True:
-                escolha = str(input('Deseja continuar ? [S/N] ')).upper()
-                if escolha in ('S', 'N'):
-                    break
+                choice = input("Você precisará usar seu cheque especial para realizar esse saque, deseja continuar ? [S/N] ").upper()
+                if choice not in ("S", "N"):
+                    print(f"Digite uma escolha válida! [S/N]")
                 else:
-                    print('Digite uma opção válida! ')
-            if escolha == 'S':
-                conta.saldo = 0
-                conta.cheque_especial_usado += uso_cheque
-                print(f'Saque Realizado com Sucesso!\n Saldo atual: R${conta.saldo:,.2f} ')
-                conta.historico.append({
-                'tipo': 'Saque',
-                'valor': valor_saque,
-                'cheque': uso_cheque
-            })
+                    break
+            if choice == "N":
+                print(f"Saque cancelado!")
+                resultado = False
             else:
-                print('Saque Cancelado! ')
+                resultado = conta.sacar(valor)
         else:
-            print('Saque indisponível!\n Motivo: Limite Total Insuficiente. ')
+            print("Limite total indisponível, saque cancelado!")
+            resultado = False
     else:
-        conta.saldo -= valor_saque
-        print(f'Saque realizado com sucesso!\n Saldo atual: R${conta.saldo:.2f}')
-        conta.historico.append({
-            'tipo': 'Saque',
-            'valor': valor_saque
-        })
+        resultado = conta.sacar(valor)
+
+    # Verificação do Resultado
+    if resultado:
+        print("Realizando o saque...")
+        sleep(1)
+        print("Saque realizado com sucesso!")
+    else:
+        print("Saque não realizado!")
