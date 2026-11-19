@@ -1,14 +1,5 @@
 from time import sleep
 
-dados_bancarios = {
-'agencia': 524,
-'conta': 77054,
-'chaves_pix': {
-    'cpf': '123.123.123-12',
-    'telefone': '59928022',
-    }
-}
-
 destinatarios = {
 'Gloria': '27104230653',
 'Chiquinho': '38991392663',
@@ -16,11 +7,17 @@ destinatarios = {
 }
 
 class Banco:
-    def __init__(self):
-        self.__saldo = 0
+    def __init__(self, agencia: str, numero_conta: str, chave_cpf: str = None, chave_email: str = None, chave_telefone: str = None, chave_aleatoria: str = None):
+        self.__saldo = 1500
         self.limite_cheque_especial = 500
-        self.cheque_especial_usado = 300
+        self.cheque_especial_usado = 0
         self.historico = []
+        self.agencia = agencia
+        self.numero_conta = numero_conta
+        self.chave_cpf = chave_cpf
+        self.chave_email = chave_email
+        self.chave_telefone = chave_telefone
+        self.chave_aleatoria = chave_aleatoria
 
     @property
     def saldo(self):
@@ -124,6 +121,21 @@ class Banco:
                 "valor": valor,
             })
             return True
+
+    def chaves_pix(self) -> None:
+        print(f"\nChaves Pix cadastradas:")
+        chaves_cadastradas = {
+        "CPF": self.chave_cpf,
+        "Email": self.chave_email,
+        "Telefone": self.chave_telefone,
+        "Aleatória": self.chave_aleatoria
+    }
+        
+        for chave, valor in chaves_cadastradas.items():
+            if valor is None:
+                print(f"{chave}: Não cadastrado")
+            else:
+                print(f"{chave}: {valor}")
 
 def extrato(conta):
     """
@@ -245,19 +257,21 @@ def areapix(conta):
                     else:
                         print("Transferência não realizada!")
                         break
-            if chave_encontrada == False:
+            if not chave_encontrada:
                 print("Nenhuma chave encontrada!")
                 continue
+
         elif escolhapix == 2:
-            print(dados_bancarios['chaves_pix']['cpf'])
-            print(dados_bancarios['chaves_pix']['telefone'])
+            conta.chaves_pix()
         elif escolhapix == 3:
             return
 
-def consultar_dados():
+def consultar_dados(conta):
     #Dados Bancários
-    print(f"\nAgência: {dados_bancarios['agencia']}")
-    print(f"Conta: {dados_bancarios['conta']}\n")
+    print(f"\nAgência: {conta.agencia}")
+    print(f"Conta: {conta.numero_conta}")
+    conta.chaves_pix()
+    print("-" * 30)
  
 def deposito(conta):
         print(f'\nSaldo atual: R${conta.saldo:.2f}\n')

@@ -3,7 +3,8 @@
 import banco
 from time import sleep
 
-conta1 = banco.Banco()
+conta1 = banco.Banco("0533", "14444")
+conta2 = banco.Banco("0542", "14796", "10487343662", "fleal448@gmail.com")
 
 while True:
     banco.menu()
