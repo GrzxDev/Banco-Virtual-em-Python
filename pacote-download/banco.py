@@ -33,6 +33,31 @@ class Banco:
         else:
             raise AttributeError("Não é possível alterar o saldo dessa maneira!")
 
+    def _movimentar_saldo(self, valor) -> tuple:
+        # Cálculo de Limites
+        limite_cheque_disponivel = self.limite_cheque_especial - self.cheque_especial_usado
+        limite_total = self.saldo + limite_cheque_disponivel
+
+        # Validações
+        if valor <= 0:
+            return False, 0
+
+        if valor > limite_total:
+            return False, 0
+
+        # Operações
+        if valor > self.saldo:
+            # Uso de Cheque
+            uso_cheque = valor - self.saldo
+
+            self.__saldo = 0
+            self.cheque_especial_usado += uso_cheque
+            return True, uso_cheque
+        else:
+            self.__saldo -= valor
+            return True, 0
+
+
     def depositar(self, valor):
         if valor <= 0:
             raise ValueError("Valor inválido!")            
@@ -54,39 +79,53 @@ class Banco:
         return f"R${valor:,.2f} depositado com sucesso !"
 
     def sacar(self, valor) -> bool:
-        # Cálculo de Limites
-        limite_cheque_disponivel = self.limite_cheque_especial - self.cheque_especial_usado
-        limite_total = self.saldo + limite_cheque_disponivel
 
-        # Validação de Valor
-        if valor <= 0:
+        sucesso, uso_cheque = self._movimentar_saldo(valor)
+
+        # Falha na Movimentação
+        if not sucesso:
             return False
 
-        # Validação do Valor do Saque
-        if valor > limite_total:
-            return False
-
-        if valor > self.saldo:
-            # Valor Utilizado do Cheque Especial
-            uso_cheque = valor - self.saldo
-
-            self.__saldo = 0
-            self.cheque_especial_usado += uso_cheque
-            # Registro no Histórico
+        # Saque com Cheque
+        if uso_cheque > 0:
             self.historico.append({
                 "tipo": "Saque",
                 "valor": valor,
                 "cheque": uso_cheque
             })
             return True
+        
+        # Saque sem Cheque
         else:
             self.historico.append({
                 "tipo": "Saque",
                 "valor": valor
             })
-            self.__saldo -= valor
             return True
 
+    def pix(self, valor) -> bool:
+
+        sucesso, uso_cheque = self._movimentar_saldo(valor)
+
+        # Falha na Movimentação
+        if not sucesso:
+            return False
+
+        # Pix com Cheque
+        if uso_cheque > 0:
+            self.historico.append({
+                "tipo": "Pix",
+                "valor": valor,
+                "cheque": uso_cheque
+            })
+            return True
+        # Pix sem Cheque
+        else:
+            self.historico.append({
+                "tipo": "Pix",
+                "valor": valor,
+            })
+            return True
 
 def extrato(conta):
     """
@@ -105,19 +144,18 @@ def extrato(conta):
                 print(f'Depósito: ')
                 print(f"Valor: + R${movimentacao['valor']:.2f}\n")
 
-            elif movimentacao['tipo'] == 'Transferência' and 'cheque' in movimentacao:
+            elif movimentacao['tipo'] == 'Pix' and 'cheque' in movimentacao:
                 quantidade += 1
                 total_saida += movimentacao['valor']
-                print(f'Transferência: ')
+                print(f'Transferência Pix: ')
                 print(f"Valor Total da Transferência: - R${movimentacao['valor']:,.2f}")
                 print(f"Valor Retirado do Limite: R${movimentacao['cheque']:,.2f}\n")
 
-            elif movimentacao['tipo'] == 'Transferência':
+            elif movimentacao['tipo'] == 'Pix':
                 quantidade += 1
                 total_saida += movimentacao['valor']
-                print('Transferência: ')
-                print(f"Valor: - R${movimentacao['valor']:.2f}")
-                print(f"Chave: {movimentacao['chave']}\n")
+                print('Transferência Pix: ')
+                print(f"Valor: - R${movimentacao['valor']:.2f}\n")
 
             elif movimentacao['tipo'] == 'Saque' and 'cheque' in movimentacao:
                 quantidade += 1
@@ -130,7 +168,7 @@ def extrato(conta):
                 quantidade += 1
                 total_saida += movimentacao['valor']
                 print('Saque: ')          
-                print(f'Valor: - R${movimentacao['valor']:.2f}\n')
+                print(f"Valor: - R${movimentacao['valor']:.2f}\n")
 
     print('=== Resumo ===\n')
     print(f'Movimentações: {quantidade}')
@@ -184,74 +222,40 @@ def areapix(conta):
         print('2 - Minhas Chaves Pix')
         print('3 - Voltar para o Menu')
 
-        # Entrada dos Dados
+        # Opção de Escolha
         try:
             escolhapix = int(input('Escolha uma opção: '))
         except ValueError:
             print('Escolha uma opção válida! ')
             continue
-        if escolhapix == 1:
-            print(f'O seu saldo atual é de R${conta.saldo:.2f} ')
 
-            # Validação
+        if escolhapix == 1:
+            print(f"O seu saldo atual é de R${conta.saldo:.2f}\n")
+
+            # Dados
             valor = validar_valor()
-            chave_pix = str(input('Digite a Chave Pix: '))
+            chave_pix = input("Digite a chave pix: ").strip(".-")
             chave_encontrada = False
             for pessoa, chave in destinatarios.items():
                 if chave_pix == chave:
                     chave_encontrada = True
-                    print('\nChave encontrada! ')
-                    print(f'Destinatário: {pessoa}')
-                    break
+                    print("\nChave encontrada!")
+                    print(f"Destinatário: {pessoa}")
+                    sucesso = conta.pix(valor)
+                    if sucesso:
+                        print("Tranferência realizada com sucesso!")
+                        break
+                    else:
+                        print("Transferência não realizada!")
+                        break
             if chave_encontrada == False:
-                print('Nenhuma chave encontrada! ')
-            else:
-                if valor > conta.saldo:
-                    print(f'O seu saldo é insuficiente!\nVocê usará {valor - conta.saldo} do seu cheque especial. ')
-                    while True:
-                        escolha = (input(('Deseja continuar ? [S/N] '))).upper()
-                        if escolha in ('S','N'):
-                            break
-                        print('Opção Inválida. Digite "S" ou "N". ')
-                    if escolha == 'S':
-                        uso_cheque = valor - conta.saldo
-                        limite_disponivel = conta.limite_cheque_especial - conta.cheque_especial_usado
-                        if uso_cheque <= limite_disponivel:
-                            # Processamento
-                            print(f'Realizando a transferência...')
-                            sleep(3)
-                            print('Transferência Realizada com Sucesso! ')
-
-                            # Atualização de Saldo
-                            conta.saldo = 0
-                            conta.cheque_especial_usado += uso_cheque
-                            print(f'Saldo atual: R${conta.saldo:.2f}')
-
-                            # Registro no Histórico
-                            conta.historico.append({
-                                'tipo': 'Transferência',
-                                'valor': valor,
-                                'chave': chave_pix,
-                                'cheque': uso_cheque
-                            })
-                        else:
-                            print(f'Limite insuficiente! Seu limite atual é de R${limite_disponivel:.2f}. ')
-                else:
-                    print('Realizando a transferência...')
-                    sleep(3)
-                    print('Transferência Realizada com Sucesso! ')
-                    conta.saldo -= valor
-                    print(f'Saldo atual: R${conta.saldo:.2f}')
-                    conta.historico.append({
-                        'tipo': 'Transferência',
-                        'valor': valor,
-                        'chave': chave_pix
-                    })
+                print("Nenhuma chave encontrada!")
+                continue
         elif escolhapix == 2:
             print(dados_bancarios['chaves_pix']['cpf'])
             print(dados_bancarios['chaves_pix']['telefone'])
         elif escolhapix == 3:
-            return()
+            return
 
 def consultar_dados():
     #Dados Bancários
