@@ -17,9 +17,9 @@ destinatarios = {
 
 class Banco:
     def __init__(self):
-        self.__saldo = 1500
+        self.__saldo = 0
         self.limite_cheque_especial = 500
-        self.cheque_especial_usado = 0
+        self.cheque_especial_usado = 300
         self.historico = []
 
     @property
@@ -57,10 +57,9 @@ class Banco:
             self.__saldo -= valor
             return True, 0
 
-
-    def depositar(self, valor):
+    def depositar(self, valor) -> bool:
         if valor <= 0:
-            raise ValueError("Valor inválido!")            
+            return False 
         if self.cheque_especial_usado > 0:
             if valor >= self.cheque_especial_usado:
                 self.__saldo += (valor - self.cheque_especial_usado)
@@ -75,8 +74,7 @@ class Banco:
             'tipo': 'Depósito', 
             'valor': valor
         })
-
-        return f"R${valor:,.2f} depositado com sucesso !"
+        return True
 
     def sacar(self, valor) -> bool:
 
@@ -183,14 +181,13 @@ def validar_valor():
     """
     while True:
         try:
-            valor = float(input('Digite o valor: R$ '))
+            valor = float(input("Digite o valor: R$ "))
+            if valor <= 0:
+                raise ValueError
         except ValueError:
-            print('Valor inválido! Digite um valor válido! ')
+            print("Valor inválido! Digite um valor válido!")
             continue
-
-        if valor > 0:
-            return valor
-        print('Valor inválido! Digite um valor maior que zero. ')
+        return valor
 
 def menu():
     print('-' * 30)
@@ -241,8 +238,8 @@ def areapix(conta):
                     chave_encontrada = True
                     print("\nChave encontrada!")
                     print(f"Destinatário: {pessoa}")
-                    sucesso = conta.pix(valor)
-                    if sucesso:
+                    resultado = conta.pix(valor)
+                    if resultado:
                         print("Tranferência realizada com sucesso!")
                         break
                     else:
@@ -265,16 +262,18 @@ def consultar_dados():
 def deposito(conta):
         print(f'\nSaldo atual: R${conta.saldo:.2f}\n')
 
-        # Digitando o Valor
+        # Validação de Valor
         valor_deposito = validar_valor()
 
         # Processamento
-        print('Realizando Depósito...')
-        sleep(3)
-        
-        mensagem = conta.depositar(valor_deposito)
+        resultado = conta.depositar(valor_deposito)
 
-        print(mensagem)
+        if resultado:
+            print('Realizando Depósito...')
+            sleep(3)
+            print("Depósito realizado com sucesso!")
+        else:
+            print("Não foi possível realizar o depósito.")
         
 def saque(conta):
     """
@@ -288,6 +287,7 @@ def saque(conta):
     print(f'Limite Cheque especial: {conta.limite_cheque_especial:.2f} ')
     print(f'Limite Total Disponível para Saque: R${limite_total:.2f} ')
 
+    # Validação de Valor
     valor = validar_valor()
 
     # Interação com Usuário (Uso de Cheque Especial)
