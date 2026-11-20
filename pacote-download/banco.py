@@ -122,6 +122,22 @@ class Banco:
             })
             return True
 
+    def receber_pix(self, valor) -> bool:
+        if self.cheque_especial_usado > 0:
+            if valor >= self.cheque_especial_usado:
+                self.__saldo += (valor - self.cheque_especial_usado)
+                self.cheque_especial_usado = 0
+            else:
+                self.cheque_especial_usado = (self.cheque_especial_usado - valor)
+        else:
+            self.__saldo += valor
+        # Registro no Histórico
+        self.historico.append({
+            "tipo": "Pix recebido",
+            "valor": valor,
+        })
+        return True
+
     def chaves_pix(self) -> None:
         print(f"\nChaves Pix cadastradas:")
         chaves_cadastradas = {
@@ -151,8 +167,14 @@ def extrato(conta):
             if movimentacao['tipo'] == 'Depósito':
                 quantidade += 1
                 total_entrada += movimentacao['valor']
-                print(f'Depósito: ')
+                print(f'Depósito:')
                 print(f"Valor: + R${movimentacao['valor']:.2f}\n")
+
+            elif movimentacao["tipo"] == "Pix recebido":
+                quantidade += 1
+                total_entrada += movimentacao["valor"]
+                print("Pix recebido:")
+                print(f"Valor: R${movimentacao['valor']:,.2f}\n")
 
             elif movimentacao['tipo'] == 'Pix' and 'cheque' in movimentacao:
                 quantidade += 1
@@ -219,7 +241,7 @@ def view_saldo(conta):
     '''
     print(f'Seu saldo atual é de R${conta.saldo:.2f}\n')
 
-def areapix(conta):
+def areapix(conta, contas):
     """
     Menu destinado para a realização com a ferramenta Pix.
     - Tranferência
@@ -250,9 +272,13 @@ def areapix(conta):
                     chave_encontrada = True
                     print("\nChave encontrada!")
                     print(f"Destinatário: {pessoa}")
+                    conta_destino = contas[pessoa]
+
                     resultado = conta.pix(valor)
                     if resultado:
+                        conta_destino.receber_pix(valor)
                         print("Tranferência realizada com sucesso!")
+                        extrato(conta_destino)
                         break
                     else:
                         print("Transferência não realizada!")
