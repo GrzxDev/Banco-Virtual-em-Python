@@ -98,30 +98,6 @@ class Banco:
             })
             return True
 
-    def pix(self, valor) -> bool:
-
-        sucesso, uso_cheque = self._movimentar_saldo(valor)
-
-        # Falha na Movimentação
-        if not sucesso:
-            return False
-
-        # Pix com Cheque
-        if uso_cheque > 0:
-            self.historico.append({
-                "tipo": "Pix",
-                "valor": valor,
-                "cheque": uso_cheque
-            })
-            return True
-        # Pix sem Cheque
-        else:
-            self.historico.append({
-                "tipo": "Pix",
-                "valor": valor,
-            })
-            return True
-
     def receber_pix(self, valor) -> bool:
         if self.cheque_especial_usado > 0:
             if valor >= self.cheque_especial_usado:
@@ -138,21 +114,48 @@ class Banco:
         })
         return True
 
-    def chaves_pix(self) -> None:
+class Pix:
+    def __init__(self, conta):
+        self.conta = conta
+
+    def chaves(self) -> None:
         print(f"\nChaves Pix cadastradas:")
         chaves_cadastradas = {
-        "CPF": self.chave_cpf,
-        "Email": self.chave_email,
-        "Telefone": self.chave_telefone,
-        "Aleatória": self.chave_aleatoria
+        "CPF": self.conta.chave_cpf,
+        "Email": self.conta.chave_email,
+        "Telefone": self.conta.chave_telefone,
+        "Aleatória": self.conta.chave_aleatoria
     }
-        
         for chave, valor in chaves_cadastradas.items():
             if valor is None:
                 print(f"{chave}: Não cadastrado")
             else:
                 print(f"{chave}: {valor}")
 
+    def pix(self, valor) -> bool:
+
+        sucesso, uso_cheque = self.conta._movimentar_saldo(valor)
+
+        # Falha na movimentação
+        if not sucesso:
+            return False
+
+        # Pix com Cheque
+        if uso_cheque > 0:
+            self.conta.historico.append({
+                "tipo": "Pix",
+                "valor": valor,
+                "cheque": uso_cheque
+            })
+            return True
+        # Pix sem Cheque
+        else:
+            self.conta.historico.append({
+                "tipo": "Pix",
+                "valor": valor
+            })
+            return True
+    
 def extrato(conta):
     """
     Exibe o extrato da conta.
@@ -278,7 +281,6 @@ def areapix(conta, contas):
                     if resultado:
                         conta_destino.receber_pix(valor)
                         print("Tranferência realizada com sucesso!")
-                        extrato(conta_destino)
                         break
                     else:
                         print("Transferência não realizada!")
@@ -296,7 +298,8 @@ def consultar_dados(conta):
     #Dados Bancários
     print(f"\nAgência: {conta.agencia}")
     print(f"Conta: {conta.numero_conta}")
-    conta.chaves_pix()
+    pix = Pix(conta)
+    pix.chaves()
     print("-" * 30)
  
 def deposito(conta):
@@ -358,3 +361,8 @@ def saque(conta):
         print("Saque realizado com sucesso!")
     else:
         print("Saque não realizado!")
+
+# Testes
+
+conta = Banco("0542", "14796", "10487343662", "fleal448@gmail.com")
+pix = Pix(conta)
