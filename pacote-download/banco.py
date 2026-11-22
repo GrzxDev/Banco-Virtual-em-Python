@@ -132,7 +132,7 @@ class Pix:
             else:
                 print(f"{chave}: {valor}")
 
-    def pix(self, valor) -> bool:
+    def transferir(self, valor) -> bool:
 
         sucesso, uso_cheque = self.conta._movimentar_saldo(valor)
 
@@ -155,6 +155,51 @@ class Pix:
                 "valor": valor
             })
             return True
+
+    def area(self, contas):
+        while True:
+            print('\n=== ÁREA PIX ===\n')
+            print('1 - Realizar uma Transferencia Pix')
+            print('2 - Minhas Chaves Pix')
+            print('3 - Voltar para o Menu')
+
+            # Opção de Escolha
+            try:
+                escolhapix = int(input('Escolha uma opção: '))
+            except ValueError:
+                print('Escolha uma opção válida! ')
+                continue
+
+            if escolhapix == 1:
+                print(f"O seu saldo atual é de R${self.conta.saldo:.2f}\n")
+
+                # Dados
+                valor = validar_valor()
+                chave_pix = input("Digite a chave pix: ").strip(".-")
+                chave_encontrada = False
+                for pessoa, chave in destinatarios.items():
+                    if chave_pix == chave:
+                        chave_encontrada = True
+                        print("\nChave encontrada!")
+                        print(f"Destinatário: {pessoa}")
+                        conta_destino = contas[pessoa]
+
+                        resultado = self.transferir(valor)
+                        if resultado:
+                            conta_destino.receber_pix(valor)
+                            print("Tranferência realizada com sucesso!")
+                            break
+                        else:
+                            print("Transferência não realizada!")
+                            break
+                if not chave_encontrada:
+                    print("Nenhuma chave encontrada!")
+                    continue
+
+            elif escolhapix == 2:
+                self.chaves()
+            elif escolhapix == 3:
+                return
     
 def extrato(conta):
     """
@@ -244,56 +289,6 @@ def view_saldo(conta):
     '''
     print(f'Seu saldo atual é de R${conta.saldo:.2f}\n')
 
-def areapix(conta, contas):
-    """
-    Menu destinado para a realização com a ferramenta Pix.
-    - Tranferência
-    - Chaves
-    """
-    while True:
-        print('\n=== ÁREA PIX ===\n')
-        print('1 - Realizar uma Transferencia Pix')
-        print('2 - Minhas Chaves Pix')
-        print('3 - Voltar para o Menu')
-
-        # Opção de Escolha
-        try:
-            escolhapix = int(input('Escolha uma opção: '))
-        except ValueError:
-            print('Escolha uma opção válida! ')
-            continue
-
-        if escolhapix == 1:
-            print(f"O seu saldo atual é de R${conta.saldo:.2f}\n")
-
-            # Dados
-            valor = validar_valor()
-            chave_pix = input("Digite a chave pix: ").strip(".-")
-            chave_encontrada = False
-            for pessoa, chave in destinatarios.items():
-                if chave_pix == chave:
-                    chave_encontrada = True
-                    print("\nChave encontrada!")
-                    print(f"Destinatário: {pessoa}")
-                    conta_destino = contas[pessoa]
-
-                    resultado = conta.pix(valor)
-                    if resultado:
-                        conta_destino.receber_pix(valor)
-                        print("Tranferência realizada com sucesso!")
-                        break
-                    else:
-                        print("Transferência não realizada!")
-                        break
-            if not chave_encontrada:
-                print("Nenhuma chave encontrada!")
-                continue
-
-        elif escolhapix == 2:
-            conta.chaves_pix()
-        elif escolhapix == 3:
-            return
-
 def consultar_dados(conta):
     #Dados Bancários
     print(f"\nAgência: {conta.agencia}")
@@ -364,5 +359,13 @@ def saque(conta):
 
 # Testes
 
-conta = Banco("0542", "14796", "10487343662", "fleal448@gmail.com")
-pix = Pix(conta)
+conta1 = Banco("0524", "14796", "10487343662", "fleal448@gmail.com")
+conta2 = Banco("0524", "25841", "123123123")
+
+contas = {
+    "Gloria": conta2
+}
+
+pix = Pix(conta1)
+
+pix.area(contas)
