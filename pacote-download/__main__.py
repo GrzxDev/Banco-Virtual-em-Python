@@ -31,7 +31,7 @@ if __name__ == "__main__":
             pix = banco.Pix(conta)
             pix.area(contas)
         elif escolha == 3:
-            banco.consultar_dados(conta)
+            conta.consultar_dados()
         elif escolha == 4:
             banco.deposito(conta)
         elif escolha == 5:

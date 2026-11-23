@@ -170,6 +170,14 @@ class Banco:
         print(f'Saldo Atual: R${self.__saldo:,.2f}')
         print(f'Cheque Especial Utilizado: R${self.cheque_especial_usado:,.2f}')
 
+    def consultar_dados(self):
+        #Dados Bancários
+        print(f"\nAgência: {self.agencia}")
+        print(f"Conta: {self.numero_conta}")
+        pix = Pix(self)
+        pix.chaves()
+        print("-" * 30)
+
 class Pix:
     def __init__(self, conta):
         self.conta = conta
@@ -288,14 +296,6 @@ def view_saldo(conta):
     Menu destinado para a visualização do saldo.
     '''
     print(f'Seu saldo atual é de R${conta.saldo:.2f}\n')
-
-def consultar_dados(conta):
-    #Dados Bancários
-    print(f"\nAgência: {conta.agencia}")
-    print(f"Conta: {conta.numero_conta}")
-    pix = Pix(conta)
-    pix.chaves()
-    print("-" * 30)
  
 def deposito(conta):
         print(f'\nSaldo atual: R${conta.saldo:.2f}\n')
