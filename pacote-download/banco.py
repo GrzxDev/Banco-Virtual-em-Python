@@ -178,6 +178,9 @@ class Banco:
         pix.chaves()
         print("-" * 30)
 
+    def view_saldo(self):
+        print(f'Seu saldo atual é de R${self.saldo:,.2f}\n')
+
 class Pix:
     def __init__(self, conta):
         self.conta = conta
@@ -290,12 +293,6 @@ def menu():
     print('5 - Extrato')
     print('6 - Saque')
     print('7 - Sair')
-
-def view_saldo(conta):
-    '''
-    Menu destinado para a visualização do saldo.
-    '''
-    print(f'Seu saldo atual é de R${conta.saldo:.2f}\n')
  
 def deposito(conta):
         print(f'\nSaldo atual: R${conta.saldo:.2f}\n')

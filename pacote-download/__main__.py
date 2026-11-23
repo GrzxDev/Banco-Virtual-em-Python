@@ -26,7 +26,7 @@ if __name__ == "__main__":
             continue
 
         if escolha == 1:
-            banco.view_saldo(conta)
+            conta.view_saldo()
         elif escolha == 2:
             pix = banco.Pix(conta)
             pix.area(contas)
