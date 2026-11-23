@@ -114,6 +114,62 @@ class Banco:
         })
         return True
 
+    def extrato(self):
+        """
+        Exibe o extrato da conta.
+        """
+        print('== Extrato ==\n')
+        quantidade = total_entrada = total_saida = 0
+
+        if not self.historico:
+            print('Nenhuma movimentação realizada. ')
+        else:
+            for movimentacao in self.historico:
+                if movimentacao['tipo'] == 'Depósito':
+                    quantidade += 1
+                    total_entrada += movimentacao['valor']
+                    print(f'Depósito:')
+                    print(f"Valor: + R${movimentacao['valor']:.2f}\n")
+
+                elif movimentacao["tipo"] == "Pix recebido":
+                    quantidade += 1
+                    total_entrada += movimentacao["valor"]
+                    print("Pix recebido:")
+                    print(f"Valor: R${movimentacao['valor']:,.2f}\n")
+
+                elif movimentacao['tipo'] == 'Pix' and 'cheque' in movimentacao:
+                    quantidade += 1
+                    total_saida += movimentacao['valor']
+                    print(f'Transferência Pix: ')
+                    print(f"Valor Total da Transferência: - R${movimentacao['valor']:,.2f}")
+                    print(f"Valor Retirado do Limite: R${movimentacao['cheque']:,.2f}\n")
+
+                elif movimentacao['tipo'] == 'Pix':
+                    quantidade += 1
+                    total_saida += movimentacao['valor']
+                    print('Transferência Pix: ')
+                    print(f"Valor: - R${movimentacao['valor']:.2f}\n")
+
+                elif movimentacao['tipo'] == 'Saque' and 'cheque' in movimentacao:
+                    quantidade += 1
+                    total_saida += movimentacao['valor']
+                    print('Saque: ')
+                    print(f"Valor total do saque: - R${movimentacao['valor']:,.2f}")
+                    print(f"Valor Retirado do Limite: R${movimentacao['cheque']:,.2f}\n")
+
+                elif movimentacao['tipo'] == 'Saque':
+                    quantidade += 1
+                    total_saida += movimentacao['valor']
+                    print('Saque: ')          
+                    print(f"Valor: - R${movimentacao['valor']:.2f}\n")
+
+        print('=== Resumo ===\n')
+        print(f'Movimentações: {quantidade}')
+        print(f'Entradas: R${total_entrada:.2f}')
+        print(f'Saídas: R${total_saida:.2f}')
+        print(f'Saldo Atual: R${self.__saldo:,.2f}')
+        print(f'Cheque Especial Utilizado: R${self.cheque_especial_usado:,.2f}')
+
 class Pix:
     def __init__(self, conta):
         self.conta = conta
@@ -201,62 +257,6 @@ class Pix:
             elif escolhapix == 3:
                 return
     
-def extrato(conta):
-    """
-    Exibe o extrato da conta.
-    """
-    print('== Extrato ==\n')
-    quantidade = total_entrada = total_saida = 0
-
-    if not conta.historico:
-        print('Nenhuma movimentação realizada. ')
-    else:
-        for movimentacao in conta.historico:
-            if movimentacao['tipo'] == 'Depósito':
-                quantidade += 1
-                total_entrada += movimentacao['valor']
-                print(f'Depósito:')
-                print(f"Valor: + R${movimentacao['valor']:.2f}\n")
-
-            elif movimentacao["tipo"] == "Pix recebido":
-                quantidade += 1
-                total_entrada += movimentacao["valor"]
-                print("Pix recebido:")
-                print(f"Valor: R${movimentacao['valor']:,.2f}\n")
-
-            elif movimentacao['tipo'] == 'Pix' and 'cheque' in movimentacao:
-                quantidade += 1
-                total_saida += movimentacao['valor']
-                print(f'Transferência Pix: ')
-                print(f"Valor Total da Transferência: - R${movimentacao['valor']:,.2f}")
-                print(f"Valor Retirado do Limite: R${movimentacao['cheque']:,.2f}\n")
-
-            elif movimentacao['tipo'] == 'Pix':
-                quantidade += 1
-                total_saida += movimentacao['valor']
-                print('Transferência Pix: ')
-                print(f"Valor: - R${movimentacao['valor']:.2f}\n")
-
-            elif movimentacao['tipo'] == 'Saque' and 'cheque' in movimentacao:
-                quantidade += 1
-                total_saida += movimentacao['valor']
-                print('Saque: ')
-                print(f"Valor total do saque: - R${movimentacao['valor']:,.2f}")
-                print(f"Valor Retirado do Limite: R${movimentacao['cheque']:,.2f}\n")
-
-            elif movimentacao['tipo'] == 'Saque':
-                quantidade += 1
-                total_saida += movimentacao['valor']
-                print('Saque: ')          
-                print(f"Valor: - R${movimentacao['valor']:.2f}\n")
-
-    print('=== Resumo ===\n')
-    print(f'Movimentações: {quantidade}')
-    print(f'Entradas: R${total_entrada:.2f}')
-    print(f'Saídas: R${total_saida:.2f}')
-    print(f'Saldo Atual: R${conta.saldo:,.2f}')
-    print(f'Cheque Especial Utilizado: R${conta.cheque_especial_usado:,.2f}')
-
 def validar_valor():
     """
     Função para validar um valor no projeto, seja pra depósito, tranferência e etc.
@@ -272,7 +272,7 @@ def validar_valor():
         return valor
 
 def menu():
-    print('-' * 30)
+    print("\n" + '-' * 30)
     print("Banco DuGrau".center(30))
     print('-' * 30)
     print('1 - Saldo')
@@ -359,13 +359,11 @@ def saque(conta):
 
 # Testes
 
-conta1 = Banco("0524", "14796", "10487343662", "fleal448@gmail.com")
-conta2 = Banco("0524", "25841", "123123123")
+# conta1 = Banco("0524", "14796", "10487343662", "fleal448@gmail.com")
+# conta2 = Banco("0524", "25841", "123123123")
 
-contas = {
-    "Gloria": conta2
-}
+# contas = {
+#     "Gloria": conta2
+# }
 
-pix = Pix(conta1)
-
-pix.area(contas)
+# conta1.extrato()
