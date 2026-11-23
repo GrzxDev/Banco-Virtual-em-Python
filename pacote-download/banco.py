@@ -281,18 +281,6 @@ def validar_valor():
             print("Valor inválido! Digite um valor válido!")
             continue
         return valor
-
-def menu():
-    print("\n" + '-' * 30)
-    print("Banco DuGrau".center(30))
-    print('-' * 30)
-    print('1 - Saldo')
-    print('2 - Area Pix')
-    print('3 - Consultar Dados Bancarios ')
-    print('4 - Depósito')
-    print('5 - Extrato')
-    print('6 - Saque')
-    print('7 - Sair')
  
 def deposito(conta):
         print(f'\nSaldo atual: R${conta.saldo:.2f}\n')

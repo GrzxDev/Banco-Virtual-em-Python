@@ -14,10 +14,22 @@ contas = {
     "Fred": fred
 }
 
-if __name__ == "__main__":
+def menu():
+    print("\n" + '-' * 30)
+    print("Banco DuGrau".center(30))
+    print('-' * 30)
+    print('1 - Saldo')
+    print('2 - Area Pix')
+    print('3 - Consultar Dados Bancarios ')
+    print('4 - Depósito')
+    print('5 - Extrato')
+    print('6 - Saque')
+    print('7 - Sair')
 
+if __name__ == "__main__":
+    
     while True:
-        banco.menu()
+        menu()
         # Opção escolhida
         try:
             escolha = int(input("\nEscolha uma opção: "))
